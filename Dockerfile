@@ -1,34 +1,25 @@
 # Use official Python 3.10 slim image
 FROM python:3.10-slim
-
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PORT=8080
-
 # Set working directory
 WORKDIR /app
-
-# Copy EVERYTHING first to ensure we don't miss files regardless of folder structure
+# Copy EVERYTHING from your local machine to the container
+# This includes backend/ requirements.txt and index.html etc.
 COPY . .
-
-# Try to find and install requirements.txt wherever it is
+# Install dependencies from wherever requirements.txt is found
 RUN if [ -f "backend/requirements.txt" ]; then \
         pip install --no-cache-dir -r backend/requirements.txt; \
     elif [ -f "requirements.txt" ]; then \
         pip install --no-cache-dir -r requirements.txt; \
-    else \
-        pip install --no-cache-dir fastapi uvicorn pydantic python-multipart; \
     fi
-
-# Final check for uvicorn
+# Final dependencies ensure
 RUN pip install --no-cache-dir uvicorn fastapi pydantic
-
-# Expose port
+# Render uses the PORT environment variable
 EXPOSE ${PORT}
-
-# Start command with intelligent path detection
-# We try to run from root main, or backend.main
+# Smart launch: Try running as a package, if not, try running directly
 CMD if [ -f "backend/main.py" ]; then \
         python3 -m uvicorn backend.main:app --host 0.0.0.0 --port ${PORT}; \
     else \

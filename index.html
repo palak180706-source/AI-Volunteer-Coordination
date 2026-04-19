@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VitalLink AI | Smart Volunteer Coordination</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar: Missions -->
+    <aside class="sidebar">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="stroke: url(#grad1);">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#ff5e3a;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#ff9a8b;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+        VitalLink AI
+      </div>
+
+      <div class="mission-section">
+        <h2 class="section-title">Active Missions</h2>
+        <div id="missionList">
+          <div class="mission-card active" onclick="selectMission(0)">
+            <span class="mission-tag">URGENT</span>
+            <h4>Flash Flood - Sector 4</h4>
+            <div class="mission-meta">
+              <span>📍 Sector 4 Core</span>
+              <span>🆘 Medical, Logistics</span>
+            </div>
+          </div>
+          <div class="mission-card" onclick="selectMission(1)">
+            <span class="mission-tag" style="background: var(--warning);">PENDING</span>
+            <h4>Forest Fire Response</h4>
+             <div class="mission-meta">
+              <span>📍 Foothills Range</span>
+              <span>🆘 Heavy SAR</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-mini" style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--glass-border);">
+        <p class="section-title">Analysis Stats</p>
+        <div style="font-size: 13px;">
+          <span style="color: var(--accent-secondary); font-weight: 700;" id="analyzedCount">1,240</span> volunteers analyzed
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="header">
+        <div>
+          <h1 style="font-size: 28px;">AI-based Volunteer Matching</h1>
+          <p style="color: var(--accent-primary); font-weight: 600; font-size: 14px; letter-spacing: 1px;">Weighted Scoring Optimization Engine</p>
+        </div>
+        <div class="explanation-chip">
+          This system uses AI-inspired weighted scoring to optimize volunteer allocation in real-time.
+        </div>
+      </header>
+
+      <!-- Input Filters -->
+      <section class="input-panel">
+        <div class="input-group">
+          <label>Target Location</label>
+          <input type="text" id="input-location" value="Sector 4 Core" readonly>
+        </div>
+        <div class="input-group">
+          <label>Required Help Type</label>
+          <select id="input-help-type" onchange="updateFilters()">
+             <option value="Medical">Medical</option>
+             <option value="Logistics">Logistics</option>
+             <option value="SAR">Search & Rescue</option>
+             <option value="All" selected>All Emergency Types</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Map Visualization -->
+      <section class="map-container">
+        <div class="map-overlay">
+          <div class="map-marker" style="top: 30%; left: 45%;"></div>
+          <div class="map-marker" style="top: 55%; left: 60%;"></div>
+          <div class="map-scanner"></div>
+        </div>
+        <div id="map-status">📍 Live Coordination Grid: Active Region</div>
+      </section>
+
+      <!-- Best Match Highlight -->
+      <section id="bestMatchSection">
+        <h2 class="section-title">Best Optimized Match Output</h2>
+        <div id="bestMatchHero">
+          <!-- Best match card will be injected here with 'BEST MATCH' badge -->
+        </div>
+      </section>
+
+      <section>
+        <h2 class="section-title">Ranked Candidates</h2>
+        <div class="volunteer-grid" id="volunteerGrid">
+          <!-- Remaining volunteer cards -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Right Panel -->
+    <aside class="controls-panel">
+      <h2 class="section-title">Scoring Weights Matrix</h2>
+      
+      <div class="weight-control">
+        <div class="weight-header">
+          <span>Skill Match</span>
+          <span id="label-skill">40%</span>
+        </div>
+        <input type="range" id="weight-skill" min="0" max="100" value="40">
+      </div>
+
+      <div class="weight-control">
+        <div class="weight-header">
+          <span>Location Proximity</span>
+          <span id="label-proximity">30%</span>
+        </div>
+        <input type="range" id="weight-proximity" min="0" max="100" value="30">
+      </div>
+
+      <div class="weight-control">
+        <div class="weight-header">
+          <span>Availability</span>
+          <span id="label-availability">20%</span>
+        </div>
+        <input type="range" id="weight-availability" min="0" max="100" value="20">
+      </div>
+
+      <div class="weight-control">
+        <div class="weight-header">
+          <span>Experience Level</span>
+          <span id="label-experience">10%</span>
+        </div>
+        <input type="range" id="weight-experience" min="0" max="100" value="10">
+      </div>
+
+      <div class="weight-breakdown">
+        <p class="section-title" style="margin-top: 20px;">Logic Breakdown</p>
+        <ul style="font-size: 11px; color: var(--text-dim); list-style: none; padding: 0;">
+          <li>• Skill Match (40%): Core competency match</li>
+          <li>• Location (30%): Distance to ground zero</li>
+          <li>• Availability (20%): Real-time readiness</li>
+          <li>• Experience (10%): Mission history</li>
+        </ul>
+      </div>
+
+      <div style="margin-top: auto; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+        <button class="btn-assign" style="width: 100%;">DEPLOY OPTIMIZED MISSION</button>
+      </div>
+    </aside>
+  </div>
+
+
+  <script src="app.js"></script>
+</body>
+</html>

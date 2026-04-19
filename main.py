@@ -5,23 +5,25 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
 import os
-
 app = FastAPI(title="VitalLink AI - Matching Engine")
-
 # Intelligent path detection for frontend
-# Try current dir (flat structure) or parent dir (backend folder structure)
+# Try to find a directory that contains index.html
 possible_paths = [
     os.path.join(os.getcwd(), "frontend"),
     os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend"),
-    "/frontend" # Docker fallback
+    "/frontend",
+    os.getcwd() # Final fallback to root
 ]
-
-frontend_path = possible_paths[0]
+frontend_path = None
 for p in possible_paths:
-    if os.path.exists(p):
-        frontend_path = p
-        break
-
+    if os.path.exists(p) and os.path.isdir(p):
+        # Double check if index.html is there to be sure
+        if os.path.exists(os.path.join(p, "index.html")):
+            frontend_path = p
+            break
+# If still not found, we use current directory as a desperate fallback to avoid crash
+if not frontend_path:
+    frontend_path = os.getcwd()
 class Volunteer(BaseModel):
     id: int
     name: str
@@ -30,12 +32,10 @@ class Volunteer(BaseModel):
     availability: int # 0-100
     experience: int # 0-100
     bio: str
-
 class MatchRequest(BaseModel):
     volunteers: List[Volunteer]
     needs: List[str]
     weights: dict
-
 # Define API endpoints BEFORE mounting static files to avoid conflicts
 @app.post("/match")
 def calculate_matches(request: MatchRequest):
@@ -64,9 +64,7 @@ def calculate_matches(request: MatchRequest):
     
     scored_volunteers.sort(key=lambda x: x["score"], reverse=True)
     return scored_volunteers
-
 # Mount the frontend directory last as a catch-all for the UI
 app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
-
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
